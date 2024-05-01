@@ -19,5 +19,5 @@ jobs:
         uses: submariner-io/shipyard/gh-actions/e2e@devel
 
       - name: Post mortem
-        if: failure()
-        uses: submariner-io/shipyard/gh-actions/post-mortem@devel
+        if: always()
+        run: make post-mortem
