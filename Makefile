@@ -25,14 +25,17 @@ REPO_URL=$(shell git config remote.origin.url)
 
 CHART_PACKAGES := submariner-k8s-broker-$(CHARTS_VERSION).tgz submariner-operator-$(CHARTS_VERSION).tgz
 
-local-helm-repo: $(CHART_PACKAGES)
+local-helm-repo: generate-yamls $(CHART_PACKAGES)
 	mkdir -p $(HELM_REPO_LOCATION)
-	for archive in $^; do \
+	for archive in $(CHART_PACKAGES); do \
 	  tar xzf $$archive -C $(HELM_REPO_LOCATION); \
 	done
 
 e2e: local-helm-repo
 	$(SCRIPTS_DIR)/e2e.sh
+
+generate-yamls:
+	./generate-yamls.sh $(BASE_BRANCH)
 
 %.tgz:
 	helm dep update $(subst -$(CHARTS_VERSION),,$(basename $(@F)))
@@ -52,7 +55,7 @@ helm-docs:
 		exit 1; \
 	fi
 
-release: $(CHART_PACKAGES)
+release: generate-yamls $(CHART_PACKAGES)
 	git checkout gh-pages
 	mv *.tgz $(CHARTS_DIR)
 	if [ -f $(CHARTS_DIR)/index.yaml ]; then \
